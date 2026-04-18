@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -140,11 +141,18 @@ func (cl *ConsoleLogger) Finalize(message string) {
 	fmt.Println(message)
 }
 
-func validateURL(url string) error {
-	if !strings.Contains(url, "paste.fitgirl-repacks.site") {
-		return fmt.Errorf("invalid URL: must contain paste.fitgirl-repacks.site")
+func validateURL(rawURL string) error {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return fmt.Errorf("invalid URL: must be a valid absolute URL")
 	}
-	return nil
+
+	host := strings.ToLower(parsedURL.Hostname())
+	if host == "paste.fitgirl-repacks.site" || host == "www.paste.fitgirl-repacks.site" || host == "fuckingfast.co" || host == "www.fuckingfast.co" {
+		return nil
+	}
+
+	return fmt.Errorf("invalid URL: host must be paste.fitgirl-repacks.site or fuckingfast.co")
 }
 
 // groupDownloadLinks organizes download links into related groups
